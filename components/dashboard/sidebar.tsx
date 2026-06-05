@@ -2,131 +2,94 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Monitor,
-  BarChart3,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { signOut } from '@/lib/auth-client'
+import { ImageIcon, VideoIcon, FileIcon, HomeIcon, LogOutIcon } from 'lucide-react'
+import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/products', label: 'Produtos', icon: Package },
-  { href: '/dashboard/orders', label: 'Pedidos', icon: ShoppingCart },
-  { href: '/dashboard/totems', label: 'Totens', icon: Monitor },
-  { href: '/dashboard/reports', label: 'Relatorios', icon: BarChart3 },
-  { href: '/dashboard/settings', label: 'Configuracoes', icon: Settings },
+  { href: '/dashboard', label: 'Início', icon: HomeIcon },
+  { href: '/dashboard/fotos', label: 'Fotos', icon: ImageIcon },
+  { href: '/dashboard/videos', label: 'Vídeos', icon: VideoIcon },
+  { href: '/dashboard/arquivos', label: 'Arquivos', icon: FileIcon },
 ]
 
-function NavContent({ onItemClick }: { onItemClick?: () => void }) {
-  const pathname = usePathname()
-  const router = useRouter()
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/sign-in')
-    router.refresh()
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="p-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold">T</span>
-          </div>
-          <span className="font-bold text-lg">Toten</span>
-        </Link>
-      </div>
-      <nav className="flex-1 px-3">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || 
-              (item.href !== '/dashboard' && pathname.startsWith(item.href))
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onItemClick}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
-      <div className="p-3 border-t">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
-          onClick={handleSignOut}
-        >
-          <LogOut className="h-5 w-5" />
-          Sair
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 export function Sidebar() {
+  const pathname = usePathname()
+
   return (
-    <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-card border-r">
-      <NavContent />
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card hidden lg:flex flex-col">
+      {/* Logo */}
+      <div className="flex h-16 items-center gap-3 px-6 border-b border-border">
+        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+          <span className="text-primary-foreground font-bold text-sm">T</span>
+        </div>
+        <span className="font-bold text-lg tracking-tight">Toten</span>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-1">
+        {navItems.map((item) => {
+          const Icon = item.icon
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-4 py-4 border-t border-border">
+        <SignOutButton />
+      </div>
     </aside>
   )
 }
 
-export function MobileNav() {
-  const [open, setOpen] = useState(false)
-
+function SignOutButton() {
+  const router = useRouter()
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    router.push('/sign-in')
+  }
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Abrir menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
-        <NavContent onItemClick={() => setOpen(false)} />
-      </SheetContent>
-    </Sheet>
+    <button
+      onClick={handleSignOut}
+      className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+    >
+      <LogOutIcon className="h-4 w-4" />
+      Sair
+    </button>
   )
 }
 
 export function Header({ user }: { user: { name: string; email: string } }) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6">
-      <MobileNav />
-      <div className="flex-1" />
-      <div className="flex items-center gap-4">
-        <div className="text-right hidden sm:block">
-          <p className="text-sm font-medium">{user.name}</p>
-          <p className="text-xs text-muted-foreground">{user.email}</p>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm px-4 lg:px-6">
+      <div className="flex items-center gap-2 lg:hidden">
+        <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
+          <span className="text-primary-foreground font-bold text-xs">T</span>
         </div>
-        <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground text-sm font-medium">
-            {user.name?.charAt(0)?.toUpperCase() ?? 'U'}
+        <span className="font-bold">Toten</span>
+      </div>
+      <div className="ml-auto flex items-center gap-3">
+        <div className="text-right hidden sm:block">
+          <p className="text-sm font-medium leading-none">{user.name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
+        </div>
+        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+          <span className="text-primary font-semibold text-sm">
+            {user.name?.charAt(0).toUpperCase()}
           </span>
         </div>
       </div>

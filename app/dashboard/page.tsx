@@ -1,156 +1,134 @@
-import { getDashboardStats } from '@/app/actions/orders'
+import { fotos, videos, arquivos } from '@/lib/content'
+import { ImageIcon, VideoIcon, FileIcon, ArrowRightIcon } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  ShoppingCart,
-  DollarSign,
-  Package,
-  Monitor,
-  Clock,
-} from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import Link from 'next/link'
 
-function formatCurrency(value: string | number) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(Number(value))
-}
-
-function getStatusBadge(status: string | null) {
-  const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    pending: { label: 'Pendente', variant: 'secondary' },
-    preparing: { label: 'Preparando', variant: 'default' },
-    ready: { label: 'Pronto', variant: 'outline' },
-    delivered: { label: 'Entregue', variant: 'default' },
-    cancelled: { label: 'Cancelado', variant: 'destructive' },
-  }
-  const { label, variant } = statusMap[status ?? 'pending'] ?? statusMap.pending
-  return <Badge variant={variant}>{label}</Badge>
-}
-
-export default async function DashboardPage() {
-  const stats = await getDashboardStats()
-
+export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Visao geral do seu sistema de autoatendimento
+        <h1 className="text-2xl font-bold tracking-tight">Biblioteca de Conteúdo</h1>
+        <p className="text-muted-foreground mt-1">
+          Acesse fotos, vídeos e arquivos disponíveis para download.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-              <ShoppingCart className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Pedidos</p>
-              <p className="text-2xl font-bold">{stats.totalOrders}</p>
-            </div>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="p-6 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+            <ImageIcon className="h-6 w-6 text-blue-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{fotos.length}</p>
+            <p className="text-sm text-muted-foreground">Fotos</p>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-              <DollarSign className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Faturamento</p>
-              <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
-            </div>
+        <Card className="p-6 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+            <VideoIcon className="h-6 w-6 text-purple-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{videos.length}</p>
+            <p className="text-sm text-muted-foreground">Vídeos</p>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Package className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Produtos</p>
-              <p className="text-2xl font-bold">{stats.totalProducts}</p>
-            </div>
+        <Card className="p-6 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+            <FileIcon className="h-6 w-6 text-emerald-500" />
           </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-              <Monitor className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Totens Online</p>
-              <p className="text-2xl font-bold">
-                {stats.onlineTotems}/{stats.totalTotems}
-              </p>
-            </div>
+          <div>
+            <p className="text-2xl font-bold">{arquivos.length}</p>
+            <p className="text-sm text-muted-foreground">Arquivos</p>
           </div>
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Pedidos Pendentes</h2>
-            <Badge variant="secondary">{stats.pendingOrders}</Badge>
-          </div>
-          {stats.pendingOrders === 0 ? (
-            <p className="text-muted-foreground text-sm">Nenhum pedido pendente</p>
-          ) : (
-            <p className="text-muted-foreground text-sm">
-              Voce tem {stats.pendingOrders} pedido(s) aguardando atencao
+      {/* Quick access */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/dashboard/fotos">
+          <Card className="p-6 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <ImageIcon className="h-5 w-5 text-blue-500" />
+              </div>
+              <ArrowRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <h3 className="font-semibold">Fotos</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {fotos.length} imagens disponíveis
             </p>
-          )}
-        </Card>
-
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Pedidos Recentes</h2>
-          {stats.recentOrders.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Nenhum pedido ainda</p>
-          ) : (
-            <div className="space-y-4">
-              {stats.recentOrders.map((order) => (
+            {/* Preview grid */}
+            <div className="grid grid-cols-3 gap-1 mt-4">
+              {fotos.slice(0, 3).map((foto) => (
                 <div
-                  key={order.id}
-                  className="flex items-center justify-between py-2 border-b last:border-0"
+                  key={foto.id}
+                  className="aspect-square rounded-md bg-muted overflow-hidden"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Pedido #{order.id}
-                        {order.customerName && ` - ${order.customerName}`}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {order.totemName ?? 'Totem desconhecido'} •{' '}
-                        {order.createdAt
-                          ? formatDistanceToNow(new Date(order.createdAt), {
-                              addSuffix: true,
-                              locale: ptBR,
-                            })
-                          : 'Data desconhecida'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {getStatusBadge(order.status)}
-                    <span className="text-sm font-medium">
-                      {formatCurrency(order.total)}
-                    </span>
-                  </div>
+                  <img
+                    src={foto.thumbnail ?? foto.url}
+                    alt={foto.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               ))}
             </div>
-          )}
-        </Card>
+          </Card>
+        </Link>
+
+        <Link href="/dashboard/videos">
+          <Card className="p-6 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <VideoIcon className="h-5 w-5 text-purple-500" />
+              </div>
+              <ArrowRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <h3 className="font-semibold">Vídeos</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {videos.length} vídeos disponíveis
+            </p>
+            <div className="mt-4 space-y-2">
+              {videos.slice(0, 2).map((video) => (
+                <div
+                  key={video.id}
+                  className="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                  <VideoIcon className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{video.title}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </Link>
+
+        <Link href="/dashboard/arquivos">
+          <Card className="p-6 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <FileIcon className="h-5 w-5 text-emerald-500" />
+              </div>
+              <ArrowRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <h3 className="font-semibold">Arquivos</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {arquivos.length} arquivos para download
+            </p>
+            <div className="mt-4 space-y-2">
+              {arquivos.slice(0, 2).map((arquivo) => (
+                <div
+                  key={arquivo.id}
+                  className="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                  <FileIcon className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{arquivo.title}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </Link>
       </div>
     </div>
   )
